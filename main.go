@@ -124,10 +124,15 @@ func createRepos(conf ini.Config, path, gitPath string) (Repos, error) {
 }
 
 func createRepo(conf map[string]string, dir, gitPath string) (*Repo, error) {
-	path := filepath.Join(dir, conf["path"])
-	path, err := filepath.Abs(path)
-	if err != nil {
-		return &Repo{}, err
+	path := filepath.Clean(conf["path"])
+	if !strings.HasPrefix(path, string(filepath.Separator)) {
+		path = filepath.Join(dir, path)
+
+		ppath, err := filepath.Abs(path)
+		if err != nil {
+			return &Repo{}, err
+		}
+		path = ppath
 	}
 
 	repo := Repo{

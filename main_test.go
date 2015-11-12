@@ -129,6 +129,32 @@ func TestCreateRepos(t *testing.T) {
 	}
 }
 
+func TestCreateRepoAbsolutePath(t *testing.T) {
+	conf := map[string]string{
+		"name":   "username/repo",
+		"path":   "/repo",
+		"secret": "my-secret",
+	}
+
+	gitPath := "git"
+
+	repo, err := createRepo(conf, "./", gitPath)
+	if err != nil {
+		t.Fatalf("Unexpected erro creating repo: %s", err.Error())
+	}
+
+	expected := Repo{
+		Name:    "username/repo",
+		Path:    "/repo",
+		Secret:  "my-secret",
+		GitPath: gitPath,
+	}
+
+	if reflect.DeepEqual(repo, expected) {
+		t.Fatalf("Expected repo to be %#v, but got %#v", repo, expected)
+	}
+}
+
 func TestUpdateHandler(t *testing.T) {
 	repoPath, err := filepath.Abs("./")
 	if err != nil {
