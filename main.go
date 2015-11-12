@@ -5,33 +5,45 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"errors"
+	"flag"
 	"io"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/Thomasdezeeuw/ini"
 )
 
 const (
-	urlPrefix       = "/update"
+	urlPrefix = "/update"
+
 	eventTypeHeader = "X-GitHub-Event"
 	signatureHeader = "X-Hub-Signature"
 	signaturePrefix = "sha1="
 	pushEventType   = "push"
 
 	okBody = "OK"
+
+	portDesc  = "Port to listen on"
+	shorthand = " (shorthand)"
 )
 
-var errInvalidSignature = errors.New("invalid signature header")
+var (
+	errInvalidSignature = errors.New("invalid signature header")
+
+	port = 8080
+)
+
+func init() {
+	flag.IntVar(&port, "port", port, portDesc)
+	flag.IntVar(&port, "p", port, portDesc+shorthand)
+}
 
 func main() {
-	// todo: make port configurable.
-	// todo: add flag to overwrite.
-	configPath := "./config.ini"
-	address := ":8080"
+	configPath, address := pareseFlags()
 
 	conf, err := parseConfig(configPath)
 	if err != nil {
@@ -53,6 +65,19 @@ func main() {
 
 	h := update(repos)
 	http.ListenAndServe(address, h)
+}
+
+func pareseFlags() (configPath, address string) {
+	flag.Parse()
+
+	configPath = flag.Arg(0)
+	if configPath == "" {
+		configPath = "./config.ini"
+	}
+
+	address = ":" + strconv.Itoa(port)
+
+	return configPath, address
 }
 
 func exit(err error) {

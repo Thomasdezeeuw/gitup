@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
@@ -17,6 +18,41 @@ import (
 
 	"github.com/Thomasdezeeuw/ini"
 )
+
+func TestParseFlags(t *testing.T) {
+	oldArgs := os.Args
+	defer func() {
+		os.Args = oldArgs
+	}()
+
+	tests := []struct {
+		args       []string
+		configPath string
+		address    string
+	}{
+		{[]string{oldArgs[0]}, "./config.ini", ":8080"},
+		{[]string{oldArgs[0], "path/to/config.ini"}, "path/to/config.ini", ":8080"},
+		{[]string{oldArgs[0], "-p", "80"}, "./config.ini", ":80"},
+		{[]string{oldArgs[0], "--port", "80"}, "./config.ini", ":80"},
+		{[]string{oldArgs[0], "path/to/config.ini", "-p", "80"}, "path/to/config.ini", ":80"},
+		{[]string{oldArgs[0], "path/to/config.ini", "--port", "80"}, "path/to/config.ini", ":80"},
+	}
+
+	for _, test := range tests {
+		os.Args = test.args
+		configPath, address := pareseFlags()
+
+		if configPath != test.configPath {
+			t.Fatalf("Expected config path to be %s, but got %s",
+				test.configPath, configPath)
+		}
+
+		if address != test.address {
+			t.Fatalf("Expected address to be %s, but got %s",
+				test.address, address)
+		}
+	}
+}
 
 func TestParseConfig(t *testing.T) {
 	got, err := parseConfig("./testdata/config.ini")
