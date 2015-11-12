@@ -98,7 +98,7 @@ func TestUpdateHandler(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unexpected error creating an absolute path: %s", err.Error())
 	}
-	repoPath = filepath.Join(repoPath, "testdata", "git-repo")
+	repoPath = filepath.Join(repoPath, "testdata", "repo")
 
 	repos := Repos{
 		"example.com": {
@@ -125,7 +125,7 @@ func TestUpdateHandler(t *testing.T) {
 	}
 
 	// todo: create a working repo with a working origin.
-	expected := "exit status 128: fatal: Not a git repository (or any of the parent directories): .git\n\n"
+	expected := "exit status 1: fatal: No remote repository specified.  Please, specify either a URL or a\nremote name from which new revisions should be fetched.\n\n"
 	err = checkBody(res, http.StatusInternalServerError, expected)
 	if err != nil {
 		t.Fatal(err.Error())

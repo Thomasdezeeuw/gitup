@@ -33,6 +33,7 @@ func (r *Repo) Update() error {
 
 	var buf bytes.Buffer
 	cmd := exec.Command(r.GitPath, "pull", "--force")
+	cmd.Dir = r.Path
 	cmd.Stdout = &buf
 	cmd.Stderr = &buf
 
